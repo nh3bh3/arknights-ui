@@ -52,26 +52,6 @@ header {
 	pointer-events: none
 }
 
-.author {
-	font-family: 'Noto Sans SC', sans-serif;
-	color: #fff;
-	font-size: 3vh;
-	font-weight: 500;
-	pointer-events: auto;
-	margin: 10px;
-	position: fixed;
-}
-
-.author a {
-	color: #fff
-}
-
-.social-link {
-	display: inline-block;
-	height: 3vh;
-	width: 3vh;
-}
-
 .level-box-container {
 	height: 100%;
 	display: flex;
