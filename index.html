@@ -1,425 +1,781 @@
 <!DOCTYPE html>
-
 <html lang="en">
-
 <head>
 	<meta charset="utf-8">
-
 	<title>Arknights</title>
 	<meta name="description" content="Arknights">
 	<meta name="author" content="Mashiro">
-
 	<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport">
-
-	<!--[if lt IE 9]>
-	<script src="//cdn.jsdelivr.net/html5shiv/3.7.2/html5shiv.min.js"></script>
-	<script src="//cdnjs.cloudflare.com/ajax/libs/respond.js/1.4.2/respond.min.js"></script>
-	<![endif]-->
 
 	<script>window._loadStart = Date.now();</script>
 	<link rel="stylesheet" href="css/normalize.css?v=1.0">
 	<link rel="stylesheet" href="css/styles.css?v=1.0">
 
-	<script async src="https://s96.cnzz.com/z_stat.php?id=1277700683&web_id=1277700683"></script>
-	<!-- Global site tag (gtag.js) - Google Analytics -->
-	<script async src="https://www.googletagmanager.com/gtag/js?id=UA-100439904-7"></script>
-	<script>
-		window.dataLayer = window.dataLayer || [];
-
-		function gtag() {
-			dataLayer.push(arguments);
-		}
-		gtag('js', new Date());
-
-		gtag('config', 'UA-100439904-7');
-
-	</script>
-
 	<style>
-		/* ═══ Arknights Opening Intro ═══ */
-		.loader-layer {
-			position: fixed;
-			inset: 0;
-			z-index: 999;
-			background: #060a0f;
-			overflow: hidden;
-			font-family: 'Noto Sans SC', sans-serif;
-		}
+	/* ═══════════════════════════════════════════
+	   Arknights Opening Sequence
+	   ═══════════════════════════════════════════ */
 
-		.ak-intro {
-			position: absolute;
-			inset: 0;
-			display: flex;
-			flex-direction: column;
-			align-items: center;
-			justify-content: space-between;
-			padding: 26px 38px;
-		}
+	/* --- Base --- */
+	.loader-layer {
+		position: fixed;
+		inset: 0;
+		z-index: 999;
+		background: #000;
+		overflow: hidden;
+		font-family: 'Noto Sans SC', sans-serif;
+	}
+	.loader-layer.outro {
+		transition: opacity 0.8s ease;
+		opacity: 0;
+		pointer-events: none;
+	}
 
-		/* Background grid */
-		.ak-bg-grid {
-			position: absolute;
-			inset: 0;
-			background-image:
-				linear-gradient(rgba(0,180,216,.04) 1px, transparent 1px),
-				linear-gradient(90deg, rgba(0,180,216,.04) 1px, transparent 1px);
-			background-size: 64px 64px;
-			opacity: 0;
-			animation: akFadeIn .8s .4s forwards;
-			pointer-events: none;
-		}
+	#sphere-canvas {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		z-index: 5;
+		pointer-events: none;
+	}
 
-		/* Vignette */
-		.ak-vignette {
-			position: absolute;
-			inset: 0;
-			background: radial-gradient(ellipse at center, transparent 38%, rgba(0,0,0,.7) 100%);
-			pointer-events: none;
-		}
+	.intro-phase {
+		position: absolute;
+		inset: 0;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		opacity: 0;
+		pointer-events: none;
+		z-index: 2;
+	}
+	.intro-phase.active { opacity: 1; pointer-events: auto; }
 
-		/* CRT scanlines */
-		.ak-scanlines {
-			position: absolute;
-			inset: 0;
-			background: repeating-linear-gradient(
-				0deg,
-				transparent 0px, transparent 2px,
-				rgba(0,0,0,.1) 2px, rgba(0,0,0,.1) 3px
-			);
-			pointer-events: none;
-		}
+	#intro-flash {
+		position: absolute;
+		inset: 0;
+		background: #fff;
+		opacity: 0;
+		z-index: 100;
+		pointer-events: none;
+	}
 
-		/* Horizontal sweep line */
-		.ak-sweep {
-			position: absolute;
-			left: 0; right: 0;
-			height: 2px;
-			background: linear-gradient(to right, transparent, rgba(0,180,216,.95) 50%, transparent);
-			box-shadow: 0 0 16px rgba(0,180,216,.8), 0 0 40px rgba(0,180,216,.3);
-			animation: akSweep 1.5s .05s ease-in-out forwards;
-			opacity: 0;
-			pointer-events: none;
-		}
-		@keyframes akSweep {
-			0%   { top: -2px; opacity: 0; }
-			4%   { opacity: 1; }
-			96%  { opacity: .6; }
-			100% { top: 100%; opacity: 0; }
-		}
+	/* --- Phase 1: Disclaimer --- */
+	#phase-disclaimer {
+		background: linear-gradient(135deg, #3a3a3a 0%, #4a4a4a 100%);
+		transition: opacity 0.6s ease;
+		padding: 5vh 8vw;
+	}
+	.disc-crystal {
+		position: absolute;
+		left: 8%;
+		bottom: 10%;
+		width: 120px;
+		height: 120px;
+		background: linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.08));
+		clip-path: polygon(50% 0%, 85% 25%, 85% 75%, 50% 100%, 15% 75%, 15% 25%);
+		opacity: 0.5;
+	}
+	.disc-logos {
+		display: flex;
+		align-items: center;
+		gap: 28px;
+		margin-bottom: 36px;
+	}
+	.disc-logo-item { text-align: center; }
+	.disc-logo-icon {
+		width: 48px;
+		height: 48px;
+		margin: 0 auto 8px;
+		border: 1.5px solid rgba(255,255,255,0.4);
+		border-radius: 4px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-size: 20px;
+		color: rgba(255,255,255,0.7);
+	}
+	.disc-logo-name {
+		font-size: 15px;
+		font-weight: 700;
+		color: rgba(255,255,255,0.9);
+	}
+	.disc-logo-sub {
+		font-size: 10px;
+		letter-spacing: 2px;
+		color: rgba(255,255,255,0.5);
+		margin-top: 2px;
+	}
+	.disc-sep {
+		width: 1px;
+		height: 50px;
+		background: rgba(255,255,255,0.25);
+	}
+	.disc-text {
+		font-size: 12px;
+		line-height: 2;
+		color: rgba(255,255,255,0.7);
+		max-width: 620px;
+		text-align: center;
+		margin-top: 8px;
+	}
+	.disc-text.small { font-size: 11px; color: rgba(255,255,255,0.45); margin-top: 16px; }
 
-		/* Corner brackets */
-		.ak-corner {
-			position: absolute;
-			width: 26px;
-			height: 26px;
-			border-style: solid;
-			border-color: rgba(0,180,216,.85);
-			opacity: 0;
-		}
-		.ak-tl { top: 22px; left: 22px; border-width: 2px 0 0 2px; animation: akCorner .3s .72s forwards; }
-		.ak-tr { top: 22px; right: 22px; border-width: 2px 2px 0 0; animation: akCorner .3s .82s forwards; }
-		.ak-bl { bottom: 22px; left: 22px; border-width: 0 0 2px 2px; animation: akCorner .3s .92s forwards; }
-		.ak-br { bottom: 22px; right: 22px; border-width: 0 2px 2px 0; animation: akCorner .3s 1.02s forwards; }
-		@keyframes akCorner {
-			0%   { opacity: 0; transform: scale(.4); }
-			65%  { opacity: 1; transform: scale(1.18); }
-			100% { opacity: 1; transform: scale(1); }
-		}
+	/* --- Phase 2: Title Card --- */
+	#phase-title {
+		transition: opacity 0.5s ease;
+		overflow: hidden;
+	}
+	.title-bg {
+		position: absolute;
+		inset: 0;
+		background:
+			radial-gradient(ellipse at 30% 60%, rgba(90,120,60,0.6) 0%, transparent 50%),
+			radial-gradient(ellipse at 70% 40%, rgba(200,140,50,0.5) 0%, transparent 50%),
+			linear-gradient(to top, #3a4530 0%, #7a6a40 40%, #c09040 75%, #e0a050 100%);
+	}
+	.title-bg::after {
+		content: '';
+		position: absolute;
+		inset: 0;
+		background:
+			radial-gradient(ellipse at 75% 30%, rgba(255,200,100,0.15) 0%, transparent 40%),
+			radial-gradient(ellipse at 20% 80%, rgba(100,140,80,0.2) 0%, transparent 50%);
+	}
+	.title-fog {
+		position: absolute;
+		inset: 0;
+		background: radial-gradient(ellipse at center, rgba(255,255,255,0.05) 0%, transparent 70%);
+	}
+	.title-content {
+		position: relative;
+		z-index: 2;
+		display: flex;
+		align-items: center;
+		gap: 16px;
+	}
+	.title-deco {
+		font-family: 'Noto Serif SC', serif;
+		font-size: 28px;
+		color: rgba(255,255,255,0.6);
+	}
+	.title-cn {
+		font-family: 'Noto Serif SC', serif;
+		font-size: clamp(40px, 7vw, 80px);
+		font-weight: 900;
+		color: #fff;
+		letter-spacing: 10px;
+		text-shadow: 0 2px 30px rgba(0,0,0,0.3);
+	}
+	.title-en-wrap {
+		position: relative;
+		z-index: 2;
+		display: flex;
+		align-items: center;
+		gap: 14px;
+		margin-top: 14px;
+		border: 1px solid rgba(255,255,255,0.35);
+		padding: 5px 22px;
+	}
+	.title-en-line {
+		width: 30px;
+		height: 1px;
+		background: rgba(255,255,255,0.5);
+	}
+	.title-en {
+		font-size: clamp(11px, 1.5vw, 17px);
+		color: rgba(255,255,255,0.9);
+		letter-spacing: 8px;
+	}
 
-		/* Header row */
-		.ak-header {
-			width: 100%;
-			display: flex;
-			align-items: center;
-			gap: 12px;
-			opacity: 0;
-			animation: akSlideDown .45s .88s forwards;
-		}
-		.ak-header-dot {
-			width: 5px; height: 5px;
-			border: 1px solid rgba(0,180,216,.75);
-			transform: rotate(45deg);
-			flex-shrink: 0;
-		}
-		.ak-header-label {
-			font-size: 11px;
-			letter-spacing: 3px;
-			color: rgba(0,180,216,.6);
-			white-space: nowrap;
-		}
-		.ak-header-line {
-			flex: 1;
-			height: 1px;
-			background: linear-gradient(to right, rgba(0,180,216,.35), transparent);
-		}
-		@keyframes akSlideDown {
-			from { opacity: 0; transform: translateY(-10px); }
-			to   { opacity: 1; transform: translateY(0); }
-		}
+	/* --- Phase 3: Loading --- */
+	#phase-loading {
+		background: linear-gradient(145deg, #1a1015 0%, #2a1818 40%, #1a0c0c 100%);
+		transition: opacity 0.5s ease;
+		justify-content: flex-start;
+		padding: 6vh 8vw;
+	}
+	.load-top-bar {
+		width: 100%;
+		display: flex;
+		justify-content: space-between;
+		align-items: flex-start;
+	}
+	.load-top-left {
+		display: flex;
+		gap: 12px;
+	}
+	.load-small-btn {
+		font-size: 12px;
+		color: rgba(255,255,255,0.5);
+		border: 1px solid rgba(255,255,255,0.2);
+		padding: 3px 10px;
+	}
+	.load-version {
+		font-size: 11px;
+		color: rgba(255,255,255,0.35);
+		margin-top: 4px;
+	}
+	.load-top-right {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+	}
+	.load-age {
+		width: 28px;
+		height: 28px;
+		border: 2px solid rgba(255,255,255,0.5);
+		border-radius: 4px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-size: 14px;
+		font-weight: 700;
+		color: rgba(255,255,255,0.6);
+	}
+	.load-icp {
+		font-size: 10px;
+		color: rgba(255,255,255,0.3);
+	}
+	.load-center {
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		align-items: flex-start;
+		width: 100%;
+		max-width: 500px;
+		margin-left: 10vw;
+	}
+	.load-title {
+		font-family: 'Noto Serif SC', serif;
+		font-size: clamp(28px, 4vw, 48px);
+		font-weight: 900;
+		color: #fff;
+		margin-bottom: 16px;
+	}
+	.load-desc {
+		font-size: 13px;
+		line-height: 1.9;
+		color: rgba(255,255,255,0.6);
+		max-width: 420px;
+	}
+	.load-bottom {
+		width: 100%;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		gap: 10px;
+		margin-bottom: 2vh;
+	}
+	.load-spinner {
+		width: 18px;
+		height: 18px;
+		border: 2px solid rgba(255,255,255,0.15);
+		border-top-color: rgba(255,255,255,0.6);
+		border-radius: 50%;
+		animation: spin 0.8s linear infinite;
+	}
+	.load-status {
+		font-size: 13px;
+		color: rgba(255,255,255,0.5);
+	}
+	.load-pct {
+		position: absolute;
+		bottom: 8vh;
+		right: 10vw;
+		font-size: 22px;
+		font-weight: 700;
+		color: #a8c040;
+	}
+	@keyframes spin { to { transform: rotate(360deg); } }
 
-		/* Main center area */
-		.ak-main {
-			flex: 1;
-			display: flex;
-			flex-direction: row;
-			align-items: center;
-			justify-content: center;
-			gap: 48px;
-			position: relative;
-		}
+	/* --- Phase 4: Login --- */
+	#phase-login {
+		background: radial-gradient(ellipse at 50% 35%, #f5f5f5 0%, #e8e8e8 40%, #d5d5d5 100%);
+		transition: opacity 1.2s ease;
+		justify-content: flex-start;
+	}
+	.login-sphere-space {
+		width: 100%;
+		height: 35%;
+		position: relative;
+		z-index: 1;
+	}
+	.login-center {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		position: relative;
+		z-index: 10;
+		margin-top: -2%;
+	}
+	.login-castle {
+		color: #555;
+		margin-bottom: 8px;
+	}
+	.login-castle svg {
+		width: 50px;
+		height: 40px;
+	}
+	.login-title-cn {
+		font-family: 'Noto Serif SC', serif;
+		font-size: clamp(32px, 5vw, 62px);
+		font-weight: 900;
+		color: #1a1a1a;
+		letter-spacing: 8px;
+	}
+	.login-title-en-wrap {
+		display: flex;
+		align-items: center;
+		gap: 14px;
+		margin-top: 8px;
+		border: 1px solid rgba(0,0,0,0.25);
+		padding: 4px 20px;
+	}
+	.login-title-en-line {
+		width: 28px;
+		height: 1px;
+		background: rgba(0,0,0,0.3);
+	}
+	.login-title-en {
+		font-size: clamp(10px, 1.3vw, 15px);
+		color: #1a1a1a;
+		letter-spacing: 6px;
+	}
+	.login-btn {
+		margin-top: 32px;
+		padding: 12px 64px;
+		background: #5a5a5a;
+		color: #fff;
+		font-family: 'Noto Sans SC', sans-serif;
+		font-size: 16px;
+		font-weight: 500;
+		border: 1px solid #4a4a4a;
+		cursor: pointer;
+		letter-spacing: 4px;
+		transition: background 0.2s;
+	}
+	.login-btn:hover { background: #6a6a6a; }
+	.login-player {
+		margin-top: 14px;
+		font-size: 13px;
+		color: #999;
+		letter-spacing: 1px;
+	}
+	.login-bottom {
+		position: absolute;
+		bottom: 0;
+		left: 0;
+		right: 0;
+		height: 56px;
+		background: #333;
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: 0 24px;
+		z-index: 10;
+	}
+	.login-bl {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+		font-size: 11px;
+		color: rgba(255,255,255,0.5);
+	}
+	.login-bl-sep {
+		width: 1px;
+		height: 20px;
+		background: rgba(255,255,255,0.2);
+	}
+	.login-bl small { display: block; margin-top: 2px; font-size: 9px; color: rgba(255,255,255,0.3); }
+	.login-br {
+		display: flex;
+		align-items: center;
+		gap: 14px;
+	}
+	.login-br-btn {
+		font-size: 12px;
+		color: rgba(255,255,255,0.7);
+		background: rgba(255,255,255,0.08);
+		padding: 6px 14px;
+		cursor: pointer;
+	}
+	.login-br-info {
+		font-size: 10px;
+		color: rgba(255,255,255,0.4);
+		text-align: right;
+		line-height: 1.5;
+	}
 
-		/* Side decorative lines */
-		.ak-side {
-			display: flex;
-			flex-direction: column;
-			align-items: center;
-			gap: 10px;
-			opacity: 0;
-			animation: akFadeIn .4s 1.5s forwards;
-		}
-		.ak-side::before, .ak-side::after {
-			content: '';
-			display: block;
-			width: 1px;
-			height: 55px;
-			background: linear-gradient(to bottom, transparent, rgba(0,180,216,.4), transparent);
-		}
-		.ak-side-dot {
-			width: 4px; height: 4px;
-			background: rgba(0,180,216,.65);
-			transform: rotate(45deg);
-		}
+	/* --- Phase 5: Neural Connection --- */
+	#phase-neural {
+		background: radial-gradient(ellipse at 50% 45%, #1a1a1a 0%, #0d0d0d 100%);
+		transition: opacity 0.3s ease;
+	}
+	.neural-center {
+		position: relative;
+		z-index: 10;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+	}
+	.neural-card {
+		background: rgba(160,160,160,0.08);
+		border: 1px solid rgba(255,255,255,0.12);
+		padding: 16px 48px 24px;
+		text-align: center;
+		backdrop-filter: blur(2px);
+		position: relative;
+	}
+	.neural-card::before {
+		content: '';
+		position: absolute;
+		inset: 0;
+		background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 50" fill="rgba(255,255,255,0.03)"><rect x="8" y="14" width="24" height="21"/><rect x="2" y="8" width="8" height="27"/><rect x="30" y="8" width="8" height="27"/><rect x="15" y="0" width="10" height="35"/></svg>') center center / 60% no-repeat;
+		opacity: 0.5;
+	}
+	.neural-zone {
+		font-size: 11px;
+		color: rgba(255,255,255,0.4);
+		letter-spacing: 4px;
+		margin-bottom: 4px;
+		position: relative;
+	}
+	.neural-name {
+		font-family: 'Noto Serif SC', serif;
+		font-size: 32px;
+		font-weight: 700;
+		color: #fff;
+		position: relative;
+	}
+	.neural-num {
+		font-size: 52px;
+		font-weight: 900;
+		color: #fff;
+		line-height: 1;
+		position: relative;
+	}
+	.neural-status {
+		position: absolute;
+		bottom: 22vh;
+		font-size: 13px;
+		color: rgba(255,255,255,0.5);
+		letter-spacing: 2px;
+		z-index: 10;
+	}
+	.neural-particles {
+		position: absolute;
+		inset: 0;
+		z-index: 1;
+	}
+	.neural-particle {
+		position: absolute;
+		width: 2px;
+		height: 2px;
+		background: rgba(255,255,255,0.4);
+		border-radius: 50%;
+		animation: floatParticle 8s linear infinite;
+	}
+	@keyframes floatParticle {
+		0% { transform: translate(0, 0); opacity: 0; }
+		10% { opacity: 0.6; }
+		90% { opacity: 0.3; }
+		100% { transform: translate(-60px, -40px); opacity: 0; }
+	}
+	.neural-bl {
+		position: absolute;
+		bottom: 20px;
+		left: 24px;
+		font-size: 11px;
+		color: rgba(255,255,255,0.35);
+		line-height: 1.6;
+		z-index: 10;
+	}
+	.neural-br {
+		position: absolute;
+		bottom: 20px;
+		right: 24px;
+		font-size: 11px;
+		color: rgba(255,255,255,0.4);
+		text-align: right;
+		line-height: 1.6;
+		z-index: 10;
+	}
 
-		/* Logo: diamond */
-		.ak-diamond-wrap {
-			position: relative;
-			width: 100px; height: 100px;
-			opacity: 0;
-			animation: akLogoIn .65s 1.1s cubic-bezier(.2,.8,.3,1) forwards;
-		}
-		.ak-diamond-frame {
-			position: absolute;
-			inset: 8px;
-			border: 2px solid rgba(0,180,216,.9);
-			transform: rotate(45deg);
-			box-shadow: 0 0 18px rgba(0,180,216,.2), inset 0 0 18px rgba(0,180,216,.06);
-			animation: akDiamondGlow 3s 1.8s ease-in-out infinite;
-		}
-		@keyframes akDiamondGlow {
-			0%, 100% { box-shadow: 0 0 15px rgba(0,180,216,.2), inset 0 0 12px rgba(0,180,216,.06); }
-			50%       { box-shadow: 0 0 36px rgba(0,180,216,.55), inset 0 0 28px rgba(0,180,216,.18); }
-		}
-		.ak-diamond-core {
-			position: absolute;
-			top: 50%; left: 50%;
-			transform: translate(-50%,-50%) rotate(45deg);
-			width: 34px; height: 34px;
-			background: rgba(0,180,216,.1);
-			border: 1px solid rgba(0,180,216,.5);
-			animation: akCorePulse 3s 1.8s ease-in-out infinite;
-		}
-		@keyframes akCorePulse {
-			0%, 100% { background: rgba(0,180,216,.1); }
-			50%       { background: rgba(0,180,216,.28); transform: translate(-50%,-50%) rotate(45deg) scale(1.08); }
-		}
-		.ak-diamond-h {
-			position: absolute;
-			top: 50%; left: 0; right: 0;
-			height: 1px;
-			background: rgba(0,180,216,.22);
-			transform: translateY(-50%);
-		}
-		.ak-diamond-v {
-			position: absolute;
-			left: 50%; top: 0; bottom: 0;
-			width: 1px;
-			background: rgba(0,180,216,.22);
-			transform: translateX(-50%);
-		}
-		.ak-diamond-ring {
-			position: absolute;
-			inset: 0;
-			border: 1px solid rgba(0,180,216,.12);
-			transform: rotate(45deg) scale(1.5);
-		}
-		@keyframes akLogoIn {
-			from { opacity: 0; transform: scale(.5) rotate(-18deg); }
-			to   { opacity: 1; transform: scale(1) rotate(0deg); }
-		}
+	/* --- Phase 6: RI Intro --- */
+	#phase-ri {
+		transition: opacity 0.15s ease;
+		overflow: hidden;
+	}
+	.ri-bg {
+		position: absolute;
+		inset: -20px;
+		background:
+			radial-gradient(ellipse at 40% 50%, rgba(120,110,90,0.9) 0%, transparent 60%),
+			radial-gradient(ellipse at 60% 40%, rgba(100,95,80,0.7) 0%, transparent 50%),
+			linear-gradient(to bottom, #6a6050 0%, #7a7060 30%, #5a5040 70%, #4a4035 100%);
+		filter: blur(6px);
+	}
+	.ri-bg::after {
+		content: '';
+		position: absolute;
+		inset: 0;
+		background: rgba(0,0,0,0.15);
+	}
+	.ri-main {
+		position: relative;
+		z-index: 3;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		margin-top: -5vh;
+	}
+	.ri-triangle-svg {
+		width: clamp(180px, 22vw, 280px);
+		height: auto;
+		filter: drop-shadow(0 4px 20px rgba(0,0,0,0.3));
+	}
+	.ri-label {
+		font-size: clamp(14px, 1.8vw, 22px);
+		font-weight: 500;
+		color: #fff;
+		letter-spacing: clamp(8px, 1.5vw, 16px);
+		margin-top: 18px;
+		text-shadow: 0 1px 8px rgba(0,0,0,0.3);
+	}
+	.ri-scan {
+		position: absolute;
+		top: 43%;
+		left: 8%;
+		right: 8%;
+		height: 1px;
+		background: rgba(255,255,255,0.2);
+		z-index: 4;
+		display: flex;
+		align-items: center;
+		justify-content: space-around;
+	}
+	.ri-marker {
+		width: 5px;
+		height: 5px;
+		background: rgba(255,255,255,0.7);
+		flex-shrink: 0;
+	}
+	.ri-marker.yellow { background: #e8c43a; }
+	.ri-desc {
+		position: absolute;
+		bottom: 12vh;
+		z-index: 4;
+		font-size: clamp(12px, 1.3vw, 16px);
+		color: rgba(255,255,255,0.85);
+		letter-spacing: 1px;
+		line-height: 1.8;
+		max-width: 80%;
+		text-align: center;
+	}
+	.ri-side-text {
+		position: absolute;
+		right: 5%;
+		top: 30%;
+		writing-mode: vertical-rl;
+		font-size: 10px;
+		color: rgba(255,255,255,0.2);
+		letter-spacing: 3px;
+		z-index: 4;
+	}
 
-		/* Title */
-		.ak-title {
-			display: flex;
-			flex-direction: column;
-			align-items: flex-start;
-			gap: 9px;
-		}
-		.ak-title-en {
-			font-size: clamp(28px, 4vw, 52px);
-			font-weight: 900;
-			letter-spacing: 13px;
-			color: #fff;
-			text-shadow: 0 0 28px rgba(0,180,216,.32);
-			clip-path: inset(0 100% 0 0);
-			animation: akWipe .85s 1.38s cubic-bezier(.2,.8,.3,1) forwards;
-		}
-		.ak-title-divider {
-			width: 0;
-			height: 1px;
-			background: linear-gradient(to right, rgba(0,180,216,.7), transparent);
-			animation: akExpand .5s 2.1s forwards;
-		}
-		.ak-title-cn {
-			font-size: clamp(13px, 1.8vw, 19px);
-			font-weight: 500;
-			letter-spacing: 11px;
-			color: rgba(0,180,216,.8);
-			clip-path: inset(0 100% 0 0);
-			animation: akWipe .6s 1.85s cubic-bezier(.2,.8,.3,1) forwards;
-		}
-		@keyframes akWipe {
-			from { clip-path: inset(0 100% 0 0); }
-			to   { clip-path: inset(0 0% 0 0); }
-		}
-		@keyframes akExpand {
-			to { width: 240px; }
-		}
-
-		/* Footer / loading */
-		.ak-footer {
-			width: 100%;
-			opacity: 0;
-			animation: akFadeIn .4s 2.25s forwards;
-		}
-		.ak-footer-sep {
-			width: 100%;
-			height: 1px;
-			background: linear-gradient(to right, transparent, rgba(0,180,216,.28), transparent);
-			margin-bottom: 14px;
-		}
-		.ak-progress-wrap {
-			position: relative;
-			height: 2px;
-			background: rgba(0,180,216,.12);
-		}
-		.ak-progress-fill {
-			height: 100%;
-			width: 0;
-			background: linear-gradient(to right, rgba(0,180,216,.45), #00b4d8);
-			transition: width .12s linear;
-		}
-		.ak-progress-head {
-			position: absolute;
-			top: -4px; left: 0;
-			width: 2px; height: 10px;
-			background: #fff;
-			box-shadow: 0 0 8px #00b4d8, 0 0 16px rgba(0,180,216,.5);
-			transition: left .12s linear;
-		}
-		.ak-progress-meta {
-			display: flex;
-			justify-content: space-between;
-			margin-top: 9px;
-		}
-		.ak-progress-label {
-			font-size: 10px;
-			letter-spacing: 4px;
-			color: rgba(0,180,216,.55);
-		}
-		.ak-progress-pct {
-			font-size: 10px;
-			letter-spacing: 2px;
-			color: rgba(0,180,216,.8);
-			font-variant-numeric: tabular-nums;
-		}
-		.ak-footer-text {
-			font-size: 10px;
-			letter-spacing: 3px;
-			color: rgba(0,180,216,.32);
-			text-align: right;
-			margin-top: 10px;
-		}
-
-		/* Shared keyframes */
-		@keyframes akFadeIn {
-			from { opacity: 0; }
-			to   { opacity: 1; }
-		}
-
-		/* Fade-out transition when main page is ready */
-		.loader-layer.ak-hiding {
-			transition: opacity .75s ease;
-			opacity: 0;
-			pointer-events: none;
-		}
+	/* --- Utility Animations --- */
+	@keyframes fadeInUp {
+		from { opacity: 0; transform: translateY(12px); }
+		to { opacity: 1; transform: translateY(0); }
+	}
 	</style>
-
 </head>
 
 <body>
-	<!--
-	  -- Author: Mashiro
-	  -- Site: https://2heng.xin
-	  -- License: MIT
-	  -->
-
 	<div class="loader-layer" id="loader-layer">
-		<div class="ak-intro">
-			<!-- background layers -->
-			<div class="ak-bg-grid"></div>
-			<div class="ak-sweep"></div>
-			<div class="ak-vignette"></div>
-			<div class="ak-scanlines"></div>
+		<canvas id="sphere-canvas"></canvas>
 
-			<!-- corner brackets -->
-			<div class="ak-corner ak-tl"></div>
-			<div class="ak-corner ak-tr"></div>
-			<div class="ak-corner ak-bl"></div>
-			<div class="ak-corner ak-br"></div>
+		<!-- Flash overlay for login→neural transition -->
+		<div id="intro-flash"></div>
 
-			<!-- top header -->
-			<div class="ak-header">
-				<div class="ak-header-dot"></div>
-				<span class="ak-header-label">RHODES ISLAND PHARMACEUTICAL INC.</span>
-				<div class="ak-header-line"></div>
+		<!-- Phase 1: Company Disclaimer -->
+		<div class="intro-phase" id="phase-disclaimer">
+			<div class="disc-crystal"></div>
+			<div class="disc-logos">
+				<div class="disc-logo-item">
+					<div class="disc-logo-icon">鹰</div>
+					<div class="disc-logo-name">鹰角网络</div>
+					<div class="disc-logo-sub">HYPERGRYPH</div>
+				</div>
+				<div class="disc-sep"></div>
+				<div class="disc-logo-item">
+					<div class="disc-logo-icon">▲</div>
+					<div class="disc-logo-name">STUDIO MONTAGNE</div>
+				</div>
 			</div>
+			<p class="disc-text">本游戏的时间、地点、人物、事件、故事及其他内容均为虚构，与真实人物或事件无关。如有雷同，纯属巧合。</p>
+			<p class="disc-text small">光敏性癫痫警告：极少数人可能会在看到特定视觉图像（包括在电子游戏中可能出现的闪光灯效果或图案）时诱发癫痫。即使过去没有癫痫或癫痫发作病史的人也可能存在尚未被诊断的潜在隐患。</p>
+		</div>
 
-			<!-- center: logo + title -->
-			<div class="ak-main">
-				<div class="ak-side"><div class="ak-side-dot"></div></div>
-
-				<div class="ak-diamond-wrap">
-					<div class="ak-diamond-ring"></div>
-					<div class="ak-diamond-frame"></div>
-					<div class="ak-diamond-core"></div>
-					<div class="ak-diamond-h"></div>
-					<div class="ak-diamond-v"></div>
-				</div>
-
-				<div class="ak-title">
-					<div class="ak-title-en">ARKNIGHTS</div>
-					<div class="ak-title-divider"></div>
-					<div class="ak-title-cn">明日方舟</div>
-				</div>
-
-				<div class="ak-side"><div class="ak-side-dot"></div></div>
+		<!-- Phase 2: Title Card -->
+		<div class="intro-phase" id="phase-title">
+			<div class="title-bg"></div>
+			<div class="title-fog"></div>
+			<div class="title-content">
+				<span class="title-deco">—</span>
+				<span class="title-cn">明日方舟</span>
+				<span class="title-deco">—</span>
 			</div>
-
-			<!-- bottom loading bar -->
-			<div class="ak-footer">
-				<div class="ak-footer-sep"></div>
-				<div class="ak-progress-wrap">
-					<div class="ak-progress-fill" id="ak-fill"></div>
-					<div class="ak-progress-head" id="ak-head"></div>
-				</div>
-				<div class="ak-progress-meta">
-					<span class="ak-progress-label">LOADING</span>
-					<span class="ak-progress-pct" id="ak-pct">0%</span>
-				</div>
-				<div class="ak-footer-text">TACTICAL OPERATIONS CENTER</div>
+			<div class="title-en-wrap">
+				<span class="title-en-line"></span>
+				<span class="title-en">ARKNIGHTS</span>
+				<span class="title-en-line"></span>
 			</div>
 		</div>
+
+		<!-- Phase 3: Loading Screen -->
+		<div class="intro-phase" id="phase-loading">
+			<div class="load-top-bar">
+				<div class="load-top-left">
+					<span class="load-small-btn">清除缓存</span>
+					<span class="load-small-btn">网络检测</span>
+					<div class="load-version">Ver:2.7.11</div>
+				</div>
+				<div class="load-top-right">
+					<span class="load-icp">沪ICP备17022476号-8A</span>
+					<div class="load-age">12+</div>
+				</div>
+			</div>
+			<div class="load-center">
+				<div class="load-title">矿石病</div>
+				<p class="load-desc">矿石病，一种由源石引发的不治之症。感染者虽遭受着社会的偏见与排斥，却依然在这片大地上顽强地生存着。罗德岛制药公司，公开立场是为感染者提供医疗服务的企业……</p>
+			</div>
+			<div class="load-bottom">
+				<div class="load-spinner"></div>
+				<span class="load-status">正在检查资源完整性，不消耗流量…</span>
+			</div>
+			<div class="load-pct" id="load-pct">0%</div>
+		</div>
+
+		<!-- Phase 4: Login Screen -->
+		<div class="intro-phase" id="phase-login">
+			<div class="login-sphere-space"></div>
+			<div class="login-center">
+				<div class="login-castle">
+					<svg viewBox="0 0 60 50" fill="currentColor">
+						<rect x="2" y="10" width="10" height="32"/>
+						<rect x="48" y="10" width="10" height="32"/>
+						<rect x="22" y="2" width="16" height="40"/>
+						<rect x="12" y="18" width="10" height="24"/>
+						<rect x="38" y="18" width="10" height="24"/>
+						<rect x="0" y="6" width="3" height="6"/>
+						<rect x="5" y="6" width="3" height="6"/>
+						<rect x="10" y="6" width="3" height="6"/>
+						<rect x="22" y="-2" width="3" height="6"/>
+						<rect x="27" y="-2" width="3" height="6"/>
+						<rect x="32" y="-2" width="3" height="6"/>
+						<rect x="48" y="6" width="3" height="6"/>
+						<rect x="53" y="6" width="3" height="6"/>
+						<rect x="57" y="6" width="3" height="6"/>
+						<rect x="0" y="42" width="60" height="4" rx="0"/>
+						<ellipse cx="30" cy="42" rx="5" ry="7" fill="#d5d5d5"/>
+					</svg>
+				</div>
+				<div class="login-title-cn">明日方舟</div>
+				<div class="login-title-en-wrap">
+					<span class="login-title-en-line"></span>
+					<span class="login-title-en">ARKNIGHTS</span>
+					<span class="login-title-en-line"></span>
+				</div>
+				<button class="login-btn">开始唤醒</button>
+				<div class="login-player">玩家 | 198****8849</div>
+			</div>
+			<div class="login-bottom">
+				<div class="login-bl">
+					<span>鹰角网络</span>
+					<div class="login-bl-sep"></div>
+					<span>STUDIO MONTAGNE</span>
+					<div class="login-bl-sep"></div>
+					<span>© HYPERGRYPH. All rights reserved.<small></small></span>
+				</div>
+				<div class="login-br">
+					<span class="login-br-btn">扫码登录</span>
+					<span class="login-br-btn">账号管理</span>
+					<span class="login-br-btn">查看公告</span>
+					<div class="login-br-info">ID:499810528<br>Ver:2.7.11</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Phase 5: Neural Connection -->
+		<div class="intro-phase" id="phase-neural">
+			<div class="neural-particles" id="neural-particles"></div>
+			<div class="neural-center">
+				<div class="neural-card">
+					<div class="neural-zone">SECTOR</div>
+					<div class="neural-name">泰拉</div>
+					<div class="neural-num">#0</div>
+				</div>
+			</div>
+			<div class="neural-status">正在尝试与 Rhodes Island™ 取得神经连接</div>
+			<div class="neural-bl">
+				鹰角网络 | STUDIO MONTAGNE<br>
+				© HYPERGRYPH. All rights reserved.
+			</div>
+			<div class="neural-br">
+				ID:499810528<br>Ver:2.7.11
+			</div>
+		</div>
+
+		<!-- Phase 6: Rhodes Island Intro -->
+		<div class="intro-phase" id="phase-ri">
+			<div class="ri-bg"></div>
+			<div class="ri-main">
+				<svg class="ri-triangle-svg" viewBox="0 0 300 260">
+					<polygon points="150,0 300,260 0,260" fill="#1a1a1a"/>
+					<!-- Castle icon -->
+					<g transform="translate(110,25) scale(1.3)" fill="rgba(255,255,255,0.9)">
+						<rect x="22" y="2" width="16" height="38"/>
+						<rect x="2" y="10" width="10" height="30"/>
+						<rect x="48" y="10" width="10" height="30"/>
+						<rect x="12" y="18" width="10" height="22"/>
+						<rect x="38" y="18" width="10" height="22"/>
+						<rect x="22" y="-2" width="3" height="5"/>
+						<rect x="27" y="-2" width="3" height="5"/>
+						<rect x="32" y="-2" width="3" height="5"/>
+						<rect x="2" y="7" width="3" height="5"/>
+						<rect x="7" y="7" width="3" height="5"/>
+						<rect x="50" y="7" width="3" height="5"/>
+						<rect x="55" y="7" width="3" height="5"/>
+					</g>
+					<!-- Perspective road lines -->
+					<line x1="140" y1="100" x2="90" y2="230" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+					<line x1="160" y1="100" x2="210" y2="230" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+					<!-- Running person silhouette -->
+					<g transform="translate(143,195) scale(0.5)">
+						<circle cx="8" cy="3" r="4" fill="rgba(255,255,255,0.6)"/>
+						<path d="M8,7 L8,22 M8,12 L0,20 M8,12 L16,18 M8,22 L2,35 M8,22 L15,33" stroke="rgba(255,255,255,0.6)" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+					</g>
+				</svg>
+				<div class="ri-label">RHODES ISLAND</div>
+			</div>
+			<div class="ri-scan">
+				<div class="ri-marker"></div>
+				<div class="ri-marker"></div>
+				<div class="ri-marker"></div>
+				<div class="ri-marker"></div>
+				<div class="ri-marker"></div>
+				<div class="ri-marker yellow"></div>
+			</div>
+			<div class="ri-side-text">SYSTEM_DATA_ANALYSIS</div>
+			<div class="ri-desc">整合运动——一个由受到压迫的感染者组成，反抗非感染者及其政权的军事化民间组织。</div>
+		</div>
 	</div>
+
 	<header>
 		<div class="level-box-container">
 			<div class="level-box" id="level-box-adapter">
@@ -583,47 +939,388 @@
 	</div>
 
 	<script>
-		/* ── Arknights intro: loading bar animation ── */
-		(function () {
-			var fill, head, pct, cur = 0, tgt = 0, rafId = null;
+	/* ═══════════════════════════════════════════════════
+	   Arknights Intro Engine
+	   - Geodesic sphere rendering
+	   - Multi-phase timeline
+	   - Canvas animations
+	   ═══════════════════════════════════════════════════ */
+	(function () {
+		'use strict';
 
-			function setBar(p) {
-				p = Math.max(0, Math.min(100, p));
-				if (fill) fill.style.width = p + '%';
-				if (head) head.style.left = p + '%';
-				if (pct) pct.textContent = Math.round(p) + '%';
+		/* ── Geodesic Sphere ── */
+		function GeoSphere(subdivisions) {
+			var phi = (1 + Math.sqrt(5)) / 2;
+			var raw = [
+				[-1,phi,0],[1,phi,0],[-1,-phi,0],[1,-phi,0],
+				[0,-1,phi],[0,1,phi],[0,-1,-phi],[0,1,-phi],
+				[phi,0,-1],[phi,0,1],[-phi,0,-1],[-phi,0,1]
+			];
+			this.verts = [];
+			for (var i = 0; i < raw.length; i++) {
+				var v = raw[i], l = Math.sqrt(v[0]*v[0]+v[1]*v[1]+v[2]*v[2]);
+				this.verts.push([v[0]/l, v[1]/l, v[2]/l]);
 			}
+			this.faces = [
+				[0,11,5],[0,5,1],[0,1,7],[0,7,10],[0,10,11],
+				[1,5,9],[5,11,4],[11,10,2],[10,7,6],[7,1,8],
+				[3,9,4],[3,4,2],[3,2,6],[3,6,8],[3,8,9],
+				[4,9,5],[2,4,11],[6,2,10],[8,6,7],[9,8,1]
+			];
+			for (var s = 0; s < (subdivisions || 1); s++) this._sub();
+			this._edges();
+		}
 
-			function tick() {
-				rafId = null;
-				if (cur < tgt) {
-					cur += Math.max(0.25, (tgt - cur) * 0.045);
-					if (cur >= tgt) cur = tgt;
-					setBar(cur);
+		GeoSphere.prototype._sub = function () {
+			var c = {}, v = this.verts, nf = [];
+			function mid(a, b) {
+				var k = Math.min(a,b)+'_'+Math.max(a,b);
+				if (c[k] !== undefined) return c[k];
+				var va = v[a], vb = v[b];
+				var m = [(va[0]+vb[0])/2,(va[1]+vb[1])/2,(va[2]+vb[2])/2];
+				var l = Math.sqrt(m[0]*m[0]+m[1]*m[1]+m[2]*m[2]);
+				m[0]/=l; m[1]/=l; m[2]/=l;
+				v.push(m);
+				return (c[k] = v.length - 1);
+			}
+			for (var i = 0; i < this.faces.length; i++) {
+				var f = this.faces[i];
+				var ab = mid(f[0],f[1]), bc = mid(f[1],f[2]), ca = mid(f[2],f[0]);
+				nf.push([f[0],ab,ca],[f[1],bc,ab],[f[2],ca,bc],[ab,bc,ca]);
+			}
+			this.faces = nf;
+		};
+
+		GeoSphere.prototype._edges = function () {
+			var s = {}, e = [];
+			for (var i = 0; i < this.faces.length; i++) {
+				var f = this.faces[i];
+				var p = [[f[0],f[1]],[f[1],f[2]],[f[2],f[0]]];
+				for (var j = 0; j < 3; j++) {
+					var k = Math.min(p[j][0],p[j][1])+'_'+Math.max(p[j][0],p[j][1]);
+					if (!s[k]) { s[k]=1; e.push(p[j]); }
 				}
-				if (cur < 100) rafId = requestAnimationFrame(tick);
+			}
+			this.edges = e;
+		};
+
+		GeoSphere.prototype.render = function (ctx, cx, cy, radius, rotY, rotX, opts) {
+			opts = opts || {};
+			var lw = opts.lineWidth || 0.8;
+			var dr = opts.dotRadius || 2;
+			var cY = Math.cos(rotY), sY = Math.sin(rotY);
+			var cX = Math.cos(rotX||0), sX = Math.sin(rotX||0);
+			var proj = [];
+			var d = 3.5;
+
+			for (var i = 0; i < this.verts.length; i++) {
+				var v = this.verts[i];
+				var x1 = v[0]*cY + v[2]*sY, y1 = v[1], z1 = -v[0]*sY + v[2]*cY;
+				var y2 = y1*cX - z1*sX, z2 = y1*sX + z1*cX;
+				var sc = d / (d + z2);
+				proj.push({ x: cx + x1*radius*sc, y: cy + y2*radius*sc, z: z2, sc: sc });
 			}
 
-			function advanceTo(val) {
-				if (val > tgt) { tgt = val; if (!rafId) rafId = requestAnimationFrame(tick); }
+			ctx.lineWidth = lw;
+			for (var i = 0; i < this.edges.length; i++) {
+				var e = this.edges[i], pa = proj[e[0]], pb = proj[e[1]];
+				var az = (pa.z + pb.z) / 2;
+				var a = 0.12 + 0.48 * ((1 + az) / 2);
+				ctx.strokeStyle = 'rgba(212,168,37,' + a.toFixed(3) + ')';
+				ctx.beginPath();
+				ctx.moveTo(pa.x, pa.y);
+				ctx.lineTo(pb.x, pb.y);
+				ctx.stroke();
 			}
 
-			/* Simulated milestones (ms from page open) */
-			var steps = [[2400,22],[2900,42],[3350,60],[3800,76],[4200,88]];
+			for (var i = 0; i < proj.length; i++) {
+				var p = proj[i];
+				var a = 0.25 + 0.75 * ((1 + p.z) / 2);
+				var r = dr * (0.4 + 0.6 * p.sc);
+				ctx.fillStyle = 'rgba(232,196,58,' + a.toFixed(3) + ')';
+				ctx.beginPath();
+				ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
+				ctx.fill();
+			}
+		};
 
-			document.addEventListener('DOMContentLoaded', function () {
-				fill = document.getElementById('ak-fill');
-				head = document.getElementById('ak-head');
-				pct  = document.getElementById('ak-pct');
-				rafId = requestAnimationFrame(tick);
-				steps.forEach(function (s) {
-					setTimeout(function () { advanceTo(s[1]); }, s[0]);
-				});
-			});
+		/* ── Timeline Config ── */
+		var T = {
+			DISC_IN: 0,       DISC_OUT: 2000,
+			TITLE_IN: 2100,   TITLE_OUT: 3600,
+			LOAD_IN: 3800,    LOAD_OUT: 7500,
+			BLK1_IN: 7500,    BLK1_OUT: 9000,
+			LOGIN_IN: 9000,   LOGIN_FULL: 10500,
+			FLASH_START: 12500,
+			FLASH_PEAK: 12700,
+			NEURAL_IN: 12700,
+			FLASH_OUT: 13200,
+			NEURAL_END: 22700,
+			RI_IN: 22800,
+			RI_OUT: 26800,
+			OUTRO: 27000
+		};
 
-			/* Called by arknights.js once the page fully loads */
-			window._introFinish = function () { advanceTo(100); };
-		})();
+		var progressSteps = [
+			{ t: 0,    p: 0 },
+			{ t: 500,  p: 0 },
+			{ t: 1000, p: 10 },
+			{ t: 1500, p: 15 },
+			{ t: 2000, p: 30 },
+			{ t: 2500, p: 44 },
+			{ t: 3000, p: 60 },
+			{ t: 8500, p: 60 },
+			{ t: 9000, p: 74 },
+			{ t: 9500, p: 90 },
+			{ t: 10000, p: 100 }
+		];
+
+		/* ── State ── */
+		var canvas, ctx, geo;
+		var startTime = 0;
+		var currentPhase = '';
+		var sphereRotY = 0;
+		var neuralPct = 0;
+		var loadPctEl;
+		var flashEl;
+		var phases = {};
+		var loaderEl;
+		var stopped = false;
+
+		/* ── Helpers ── */
+		function $(id) { return document.getElementById(id); }
+
+		function showPhase(id) {
+			if (phases[id]) phases[id].classList.add('active');
+		}
+		function hidePhase(id) {
+			if (phases[id]) phases[id].classList.remove('active');
+		}
+
+		function lerp(a, b, t) { return a + (b - a) * Math.max(0, Math.min(1, t)); }
+
+		function lerpProgress(elapsed) {
+			for (var i = 0; i < progressSteps.length - 1; i++) {
+				var a = progressSteps[i], b = progressSteps[i + 1];
+				if (elapsed >= a.t && elapsed <= b.t) {
+					var frac = (elapsed - a.t) / (b.t - a.t);
+					return lerp(a.p, b.p, frac);
+				}
+			}
+			if (elapsed < progressSteps[0].t) return progressSteps[0].p;
+			return progressSteps[progressSteps.length - 1].p;
+		}
+
+		function resizeCanvas() {
+			var dpr = window.devicePixelRatio || 1;
+			canvas.width = window.innerWidth * dpr;
+			canvas.height = window.innerHeight * dpr;
+			canvas.style.width = window.innerWidth + 'px';
+			canvas.style.height = window.innerHeight + 'px';
+			ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+		}
+
+		/* ── Neural particles ── */
+		function spawnParticles() {
+			var container = $('neural-particles');
+			if (!container) return;
+			for (var i = 0; i < 25; i++) {
+				var p = document.createElement('div');
+				p.className = 'neural-particle';
+				p.style.left = (Math.random() * 100) + '%';
+				p.style.top = (Math.random() * 100) + '%';
+				p.style.animationDelay = (Math.random() * 8) + 's';
+				p.style.animationDuration = (5 + Math.random() * 6) + 's';
+				container.appendChild(p);
+			}
+		}
+
+		/* ── Render loop ── */
+		var lastTime = 0;
+
+		function render(now) {
+			if (stopped) return;
+			requestAnimationFrame(render);
+			if (!now) now = performance.now();
+
+			var dt = lastTime ? (now - lastTime) / 1000 : 0.016;
+			lastTime = now;
+			if (dt > 0.1) dt = 0.016;
+
+			var w = window.innerWidth, h = window.innerHeight;
+			ctx.clearRect(0, 0, w, h);
+
+			sphereRotY += 0.25 * dt;
+
+			/* Phase: Login sphere (small, top center) */
+			if (currentPhase === 'login') {
+				var cx = w / 2;
+				var cy = h * 0.2;
+				var r = Math.min(w, h) * 0.13;
+
+				var grd = ctx.createRadialGradient(cx, cy + r * 0.8, 0, cx, cy + r * 0.8, r * 2.5);
+				grd.addColorStop(0, 'rgba(255,255,255,0.06)');
+				grd.addColorStop(1, 'rgba(255,255,255,0)');
+				ctx.fillStyle = grd;
+				ctx.fillRect(cx - r * 3, cy - r, r * 6, r * 4);
+
+				geo.render(ctx, cx, cy, r, sphereRotY, 0.15, { lineWidth: 0.7, dotRadius: 1.8 });
+			}
+
+			/* Phase: Neural sphere (large, centered) + progress lines */
+			if (currentPhase === 'neural') {
+				var cx = w / 2;
+				var cy = h * 0.42;
+				var r = Math.min(w, h) * 0.25;
+
+				geo.render(ctx, cx, cy, r, sphereRotY, 0.12, { lineWidth: 1.0, dotRadius: 2.2 });
+
+				/* Progress lines */
+				if (neuralPct > 0) {
+					var lineY = cy;
+					var gap = 15;
+					var maxLen = (w / 2) - r - gap - 30;
+					var len = maxLen * (neuralPct / 100);
+
+					ctx.strokeStyle = '#d4a825';
+					ctx.lineWidth = 2;
+
+					ctx.beginPath();
+					ctx.moveTo(cx - r - gap, lineY);
+					ctx.lineTo(cx - r - gap - len, lineY);
+					ctx.stroke();
+
+					ctx.beginPath();
+					ctx.moveTo(cx + r + gap, lineY);
+					ctx.lineTo(cx + r + gap + len, lineY);
+					ctx.stroke();
+
+					ctx.font = '12px "Noto Sans SC", sans-serif';
+					ctx.fillStyle = '#d4a825';
+
+					var pctText = Math.round(neuralPct) + '%';
+					ctx.textAlign = 'right';
+					ctx.fillText(pctText, cx - r - gap - len - 6, lineY + 4);
+					ctx.textAlign = 'left';
+					ctx.fillText(pctText, cx + r + gap + len + 6, lineY + 4);
+				}
+			}
+		}
+
+		/* ── Phase timeline ── */
+		function runTimeline() {
+			var sched = [
+				[T.DISC_IN,     function () { showPhase('phase-disclaimer'); }],
+				[T.DISC_OUT,    function () { hidePhase('phase-disclaimer'); }],
+				[T.TITLE_IN,    function () { showPhase('phase-title'); }],
+				[T.TITLE_OUT,   function () { hidePhase('phase-title'); }],
+				[T.LOAD_IN,     function () { showPhase('phase-loading'); startLoadProgress(); }],
+				[T.LOAD_OUT,    function () { hidePhase('phase-loading'); }],
+				[T.LOGIN_IN,    function () { showPhase('phase-login'); currentPhase = 'login'; }],
+			[T.FLASH_START, function () {
+				flashEl.style.transition = 'opacity 0.2s ease';
+				flashEl.style.opacity = '1';
+			}],
+			[T.FLASH_PEAK,  function () {
+				currentPhase = 'neural';
+				phases['phase-login'].style.transition = 'opacity 0s';
+				hidePhase('phase-login');
+				showPhase('phase-neural');
+				loaderEl.style.background = '#0d0d0d';
+				flashEl.style.transition = 'opacity 0.5s ease';
+				flashEl.style.opacity = '0';
+			}],
+				[T.NEURAL_END,  function () { hidePhase('phase-neural'); currentPhase = ''; }],
+				[T.RI_IN,       function () { showPhase('phase-ri'); }],
+				[T.RI_OUT,      function () { hidePhase('phase-ri'); }],
+				[T.OUTRO,       function () { finishIntro(); }]
+			];
+
+			for (var i = 0; i < sched.length; i++) {
+				(function (time, fn) {
+					setTimeout(fn, time);
+				})(sched[i][0], sched[i][1]);
+			}
+		}
+
+		/* ── Loading phase simulated progress ── */
+		function startLoadProgress() {
+			var start = Date.now();
+			var dur = T.LOAD_OUT - T.LOAD_IN - 300;
+			function tick() {
+				var el = Date.now() - start;
+				var pct = Math.min(99, Math.round((el / dur) * 100));
+				if (loadPctEl) loadPctEl.textContent = pct + '%';
+				if (el < dur) requestAnimationFrame(tick);
+				else if (loadPctEl) loadPctEl.textContent = '99%';
+			}
+			tick();
+		}
+
+		/* ── Neural progress updater ── */
+		function runNeuralProgress() {
+			var nStart = T.NEURAL_IN;
+			function tick() {
+				if (stopped) return;
+				var el = Date.now() - startTime - nStart;
+				if (el < 0) { requestAnimationFrame(tick); return; }
+				neuralPct = lerpProgress(el);
+				if (neuralPct < 100 && Date.now() - startTime < T.NEURAL_END) {
+					requestAnimationFrame(tick);
+				}
+			}
+			var delay = Math.max(0, nStart - (Date.now() - startTime) - 500);
+			setTimeout(tick, delay);
+		}
+
+		/* ── Finish ── */
+		function finishIntro() {
+			function doHide() {
+				loaderEl.classList.add('outro');
+				setTimeout(function () {
+					loaderEl.style.display = 'none';
+					stopped = true;
+				}, 900);
+			}
+			if (window._pageReady) {
+				doHide();
+			} else {
+				var check = setInterval(function () {
+					if (window._pageReady) {
+						clearInterval(check);
+						doHide();
+					}
+				}, 100);
+			}
+		}
+
+		/* ── Init ── */
+		document.addEventListener('DOMContentLoaded', function () {
+			canvas = $('sphere-canvas');
+			ctx = canvas.getContext('2d');
+			flashEl = $('intro-flash');
+			loadPctEl = $('load-pct');
+			loaderEl = $('loader-layer');
+			phases = {
+				'phase-disclaimer': $('phase-disclaimer'),
+				'phase-title': $('phase-title'),
+				'phase-loading': $('phase-loading'),
+				'phase-login': $('phase-login'),
+				'phase-neural': $('phase-neural'),
+				'phase-ri': $('phase-ri')
+			};
+
+			geo = new GeoSphere(2);
+			resizeCanvas();
+			window.addEventListener('resize', resizeCanvas);
+			spawnParticles();
+
+			startTime = Date.now();
+			render();
+			runTimeline();
+			runNeuralProgress();
+		});
+	})();
 	</script>
 
 	<script src="js/src/arknights.js"></script>
@@ -633,5 +1330,4 @@
 	<script src="js/src/parallax.3.1.0.min.js?v=1.0"></script>
 	<script src="js/scripts.js?v=1.1"></script>
 </body>
-
 </html>

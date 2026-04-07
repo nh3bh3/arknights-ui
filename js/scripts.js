@@ -15,21 +15,7 @@ var Arknights = {
 		$(window).on('load', function () {
 			Arknights.F_SCREEN_ADAPTER();
 			Arknights.F_BG_PARRALAX_INI();
-
-			/* Fill intro progress bar to 100% */
-			if (typeof window._introFinish === 'function') window._introFinish();
-
-			/* Keep intro visible for at least 4800 ms so all animations play */
-			var minMs   = 4800;
-			var elapsed = Date.now() - (window._loadStart || Date.now());
-			var wait    = Math.max(0, minMs - elapsed);
-
-			setTimeout(function () {
-				var el = document.getElementById('loader-layer');
-				if (!el) return;
-				el.classList.add('ak-hiding');
-				setTimeout(function () { el.style.display = 'none'; }, 750);
-			}, wait + 500);
+			window._pageReady = true;
 		});
 	},
 	F_BG_PARRALAX_INI: function () {
